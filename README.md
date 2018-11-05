@@ -1,4 +1,4 @@
-This simple c++ program perfoms Lennard-Jones liquid 
+This simple c++ code perfoms Lennard-Jones liquid 
 molecular dynamics in 2D by a fast Verlet algorithm.
 
 How to run:
