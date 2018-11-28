@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo 'It may take a while...'
-for i in tip5p # spce tip3p tip4p tip5p reax
+for i in spce tip3p tip4p tip5p #reax
 do
 	echo $i
 	mpirun -np 4 lmp_mpi < $i.in > $i.out

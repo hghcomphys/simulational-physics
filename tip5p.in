@@ -83,7 +83,7 @@ fix rdf all ave/time 100 1 100 c_RDF[*] file rdf.dat mode vector
 
 #timestep 		0.5 # fs
 #velocity   	water create 300 1234 dist gaussian mom yes rot yes
-fix        		rlx water rigid/nvt/small molecule temp 300 300 50
+fix        		nvt water rigid/nvt/small molecule temp 300 300 50
 
 run 			10000
 unfix			nvt
