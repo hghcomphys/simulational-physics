@@ -1,6 +1,6 @@
 MD on CPU
 ---------
-This simple C++ code perfoms Lennard-Jones (12-16) liquid Argon 
+This simple C code perfoms Lennard-Jones (12-16) liquid Argon 
 molecular dynamics in 2D by a fast Verlet algorithm.
 
 How to run:
