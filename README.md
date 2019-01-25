@@ -2,7 +2,7 @@
 This simple C program perfoms Lennard-Jones (12-16) liquid Argon molecular dynamics in 2D by a fast Verlet algorithm.
 
 How to run:
-g++ md_nve.c -O2 && octave movie.m  
+g++ -O2 md_nve.c && octave movie.m  
 
 
 ### MD on GPU
