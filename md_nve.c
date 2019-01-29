@@ -1,15 +1,19 @@
 /*
-project name  : Molecular Dynamics (NVE)
-Author        : Hosein Ghorbanfekr - hgh.comphys@gmail.com
+---------------------------------------------------------------------
+Project name  : Molecular dynamics simulation (NVE ensemble)
+Written by    : Hosein Ghorbanfekr hgh.comphys@gmail.com
 Creation Date : 2009/05/10
-Description   : This simple c++ program perfoms Lennard-Jones liquid 
-                molecular dynamics in 2D by a fast Verlet algorithem.
---------------------------------------------------------*/ 
+Description   : This simple C program performs Lennard-Jones liquid 
+                MD simulation in 2D using a fast Verlet algorithem.
+---------------------------------------------------------------------*/ 
+
 //#include "stdafx.h"
 #include "stdlib.h" 
 #include "malloc.h"
 #include "math.h"
+
 // ------------------
+
 #define N		50
 #define Nh		100000
 #define Nt		20
@@ -19,7 +23,9 @@ Description   : This simple c++ program perfoms Lennard-Jones liquid
 #define Beta	.95
 #define L		40.
 #define Vmax	10.
+
 // -------------------------------------------------------
+
 #define Enable_restart	"yes"	// Enter "yes" or "no"
 #define RAND			(2.*(rand()/(float)RAND_MAX - .5))
 
@@ -29,6 +35,7 @@ struct	{
 	double v[2];
 	double a[2];
 }Vect;
+
 // --------------------------
 
 void Vcom(Vect *P)
@@ -49,6 +56,7 @@ void Vcom(Vect *P)
 }
 
 // --------------------------
+
 double Kinetic(Vect *P)
 {
 	int i;
@@ -60,6 +68,7 @@ double Kinetic(Vect *P)
 }
 
 // --------------------------
+
 double n_left(Vect *P) 
 {
 	int i,n=0;
@@ -69,7 +78,9 @@ double n_left(Vect *P)
 	}
 	return (float)n/(float)N;
 }
+
 // --------------------------
+
 void Dec_temprature(Vect *P)
 {
 	int i;
@@ -78,7 +89,9 @@ void Dec_temprature(Vect *P)
 		(P+i)->v[1] *= Beta;
 	}
 }
+
 // --------------------------
+
 double accel(Vect *P,double *Pre)
 {
 	int				i,j,k;
@@ -119,7 +132,9 @@ double accel(Vect *P,double *Pre)
 	}
 	return U;
 }
+
 // ----------------------------------
+
 int main(int argc, char *argv[])
 {
 	int		j,i=0,k=0,nf=1,nr=1;
