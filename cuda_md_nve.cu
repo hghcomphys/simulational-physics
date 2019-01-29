@@ -75,7 +75,7 @@ int main()
 	cudaMalloc((void**)&dev_P, size); // device particle pointer allocation
 	cudaMemcpy(dev_P, hst_P, size, cudaMemcpyHostToDevice); // host to device memory copy
 	kernel_ComputeForce<<<N/block_dim, block_dim>>>(dev_P); // compute force kernel function
-	for(int t=0;t<=10000;t++)
+	for(int t=0;t<=1000;t++)
 	{
 		if(t%100==0)
 		{

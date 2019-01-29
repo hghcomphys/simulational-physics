@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 	// initialize particles 
 	InitializeParticles();
 	accel(); 
-	for(t=0;t<=10000;t++) // the main time loop
+	for(t=0;t<=1000;t++) // the main time loop
 	{
 		// update coordinates and velocites
 		for(i=start(N);i<stop(N);i++) 

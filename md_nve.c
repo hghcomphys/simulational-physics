@@ -2,9 +2,9 @@
 ---------------------------------------------------------------------
 Project name  : Molecular dynamics simulation (NVE ensemble)
 Written by    : Hosein Ghorbanfekr hgh.comphys@gmail.com
-Creation Date : 2009/05/10
+Creation Date : May 2009
 Description   : This simple C program performs Lennard-Jones liquid 
-                MD simulation in 2D using a fast Verlet algorithem.
+                MD simulation in 2D using fast Verlet algorithem.
 ---------------------------------------------------------------------*/ 
 
 //#include "stdafx.h"
