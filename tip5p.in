@@ -1,0 +1,92 @@
+# ==============================================================
+# | This lammps script simply uses tip5p model for molecular   |
+# | dynamic simulation of water at ambient condition.          |
+# | Written by hgh.comphys@gmail.com (2016)                    |
+# ==============================================================
+
+############################
+
+dimension	3 
+boundary	p p p
+
+units       real
+atom_style	full
+
+read_data      	w233.lmp.tip5p
+
+group Hydrogen 	type 1
+group Oxygen 	type 2 
+group dummy     type 3 
+group water     union Hydrogen Oxygen dummy
+group vmd       union Hydrogen Oxygen
+
+############################
+
+pair_style      lj/cut/coul/long 10.0 
+
+# set all default pair_coeffs to 0
+pair_coeff      *   *     0.00 0.00 
+
+# TIP5P, ref: LAMMPS manual
+set type 1 charge  0.241 # H
+set type 2 charge  0.000 # O
+set type 3 charge -0.241 # dummy atom
+
+pair_coeff		2   2   0.16 3.12 #O-O
+
+kspace_style pppm 1.0e-4
+
+# Constrain the bonds and angles
+# Rigid molecule
+
+############################
+
+neigh_modify	every 1 delay 0 check no
+
+############################ Mass density
+
+variable  dens equal (mass(water)/vol*1.66054) # gr/cm3
+
+############################
+
+thermo          100
+thermo_style    custom step temp pe ke etotal press v_dens
+
+dump            1 vmd xyz 1000 dump.xyz 
+dump_modify	    1 sort id element Hw Ow dummy
+
+############################ Initial Relaxation
+
+# Initial relaxation to avoid atoms ovelaping
+timestep 		0.001 # fs
+velocity   		water create 1 1234 dist gaussian mom yes rot yes
+fix        		rlx water rigid/nvt/small molecule temp 1 1 5
+
+run 			5000
+unfix			rlx
+
+############################ NPT ensemble
+
+timestep 		0.5 # fs
+velocity    	water create 1 1234 dist gaussian mom yes rot yes
+fix        		npt water rigid/npt/small molecule  temp 300 300 50 iso 1 1 500
+
+run 			20000
+unfix			npt
+
+############################ Radial Distribution Function (RDF)
+
+compute RDF all rdf 100 2 2 2 1 1 1# O-O, O-H, H-H
+fix rdf all ave/time 100 1 100 c_RDF[*] file rdf.dat mode vector
+
+############################ NVT ensemble
+
+#timestep 		0.5 # fs
+#velocity   	water create 300 1234 dist gaussian mom yes rot yes
+fix        		nvt water rigid/nvt/small molecule temp 300 300 50
+
+run 			10000
+unfix			nvt
+
+############################ 
+

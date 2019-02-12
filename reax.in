@@ -1,0 +1,77 @@
+# ==============================================================
+# | This lammps script simply uses reaxFF for molecular        |
+# | dynamic simulation of water at ambient condition.          |
+# | Written by hgh.comphys@gmail.com (2016)                    |
+# ==============================================================
+
+############################
+
+dimension	3 
+boundary	p p p
+
+units           real
+atom_style	    full
+
+read_data      	w233.lmp.reax
+
+group Hydrogen 	type 1
+group Oxygen 	type 2 
+group water 	union Hydrogen Oxygen
+
+############################
+
+pair_style      reax/c NULL
+pair_coeff      * * ffield.reax_2018 H O
+fix             qeq all qeq/reax 1 0.0 10.0 1e-6 reax/c
+
+############################ 
+
+neigh_modify	every 1 delay 0 check no
+
+############################ Mass density
+
+variable  dens equal (mass(water)/vol*1.66054) # gr/cm3
+
+############################
+
+thermo          100
+thermo_style    custom step temp pe ke etotal press v_dens
+
+dump            1 all xyz 1000 dump.xyz 
+dump_modify	1 sort id element Hw Ow
+
+############################ Initial Relaxation
+
+# Initial relaxation to avoid atoms ovelaping
+timestep 		0.05 # fs
+velocity   		water create 1 1234 dist gaussian mom yes rot yes
+fix        		rlx water nvt temp 1 1 5
+
+run 			1000
+unfix			rlx
+
+############################ NPT ensemble
+
+timestep 		0.5 # fs
+velocity   		water create 1 1234 dist gaussian mom yes rot yes
+fix        		npt water npt temp 300 300 50 iso 1 1 500
+
+run 			10000
+unfix			npt
+
+############################ Radial Distribution Function (RDF)
+
+compute RDF all rdf 100 2 2 2 1 1 1# O-O, O-H, H-H
+fix rdf all ave/time 100 1 100 c_RDF[*] file rdf.dat mode vector
+
+############################ NVT ensemble
+
+#timestep 		0.5 # fs
+#velocity   	water create 300 1234 dist gaussian mom yes rot yes
+fix        		nvt water nvt temp 300 300 50
+
+run 			10000
+unfix			nvt
+
+############################ 
+
