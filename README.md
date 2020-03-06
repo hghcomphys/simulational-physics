@@ -1,4 +1,4 @@
-# Molecular Simulations
+# Simulations
 This project contains a list of simulations (separate folders) each related to the topic of computational physics in particular molecular simulation.
 
 
