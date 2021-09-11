@@ -1,0 +1,116 @@
+# ===============================================================
+# | This lammps script simply uses spc/e model for molecular    |
+# | dynamic simulation of water at ambient condition.           |
+# | Written by Hossein Ghorbanfekr hgh.comphys@gmail.com (2019) |
+# ===============================================================
+
+dimension	3
+boundary	p p p
+
+units       real
+atom_style	full
+
+read_data  ethanol.lammps
+replicate 10 10 10
+#read_restart	res.300000
+
+group Hydrogen type 4 5 6 7 8 9
+group Oxygen type 3 
+group Carbon type 1 2
+group ethanol union Hydrogen Oxygen Carbon
+group vmd union ethanol
+ 
+############################
+
+pair_style      lj/cut/coul/long 15.0
+pair_coeff      *   *    0.000 0.000
+pair_coeff      1   1    0.118 3.905 #C1-C1
+pair_coeff      2   2    0.207 3.775 #C2-C2
+pair_coeff      3   3    0.170 3.070 #O-O
+pair_coeff      1   2    0.156 3.840 #C1-C2
+pair_coeff      1   3    0.142 3.488 #C1-O
+pair_coeff      2   3    0.188 3.423 #C2-O
+
+kspace_style pppm 1.0e-5
+
+bond_style harmonic
+bond_coeff 1 222. 1.52
+bond_coeff 2 309. 1.11
+bond_coeff 3 428. 1.42
+bond_coeff 4 545. 0.94
+
+angle_style harmonic
+angle_coeff 1 45.90 109.44
+angle_coeff 2 34.60 109.46
+angle_coeff 3 35.50 120.00
+angle_coeff 4 75.70 109.00
+angle_coeff 5 57.50 109.50
+angle_coeff 6 35.50 109.50
+angle_coeff 7 34.60 109.46
+
+improper_style harmonic
+improper_coeff 1  1.30  180
+improper_coeff 2  0.14  60
+improper_coeff 3  0.14 -60
+improper_coeff 4  0.16  180
+improper_coeff 5  0.16  60
+improper_coeff 6  0.16 -60
+improper_coeff 7  0.16 -60
+improper_coeff 8  0.16  180
+improper_coeff 9  0.16  60
+improper_coeff 10 0.16  60
+improper_coeff 11 0.16 -60
+improper_coeff 12 0.16 -180
+
+#neighbor       2.0 nsq
+neigh_modify    every 1 delay 0 check no
+#special_bonds lj/coul 0.0 0.0 0.0 
+
+############################ Radial Distribution Function (RDF)
+
+#compute myRDF Oxygen  rdf 1000 3 3 # O-O
+#fix 10 Oxygen  ave/time 10 100 1000 c_myRDF file rdf.dat mode vector #ave running
+
+############################ Energies
+
+#variable dl equal 2.8
+#variable vp equal ((lx-v_dl)*(ly-v_dl)*(lz-v_dl)) #effective volume
+variable Den equal (46.06844*count(Oxygen)/vol*1.66054) #gr/cm3
+variable Eb  equal etotal/count(Oxygen)
+variable Pb  equal pe/count(Oxygen)
+
+############################ 
+
+restart		100000 res
+
+############################
+
+thermo          100
+thermo_style    custom step temp pe etotal press v_Pb v_Eb v_Den #lx ly lz
+
+dump           1 vmd xyz 1000 dump.xyz
+dump_modify	   1 sort id element C C O H H H H H H
+
+############################ Initial Relaxation
+
+# Initial relaxation to avoid atoms ovelaping
+#timestep 		0.01
+#velocity   	vmd create 10 21234 dist gaussian mom yes rot yes
+#fix        	rlx vmd nvt temp 300 300 1 
+
+#run 			1000
+#unfix			rlx
+
+############################ NPT ensemble
+
+timestep 		1.0
+velocity   		vmd create 10 21234 dist gaussian mom yes rot yes
+fix        		rlx vmd npt temp 300 300 100 iso 1 1 1000 #z 1 1 1000 couple xz
+
+run 			200000
+unfix			rlx
+
+write_data 		rlx.lmp
+
+############################
+
