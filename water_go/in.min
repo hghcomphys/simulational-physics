@@ -1,0 +1,235 @@
+# ===============================================================
+# | This LAMMPS script simulates water molecules trapped between|
+# | graphene-oxide membranes containing epoxy and hydroxy       |
+# | surface functionals with nanosize interlayer distance.       |
+# | Written by Hossein Ghorbanfekr hgh.comphys@gmail.com (2019) |
+# ===============================================================
+
+dimension   3
+boundary    p p p
+
+units       real
+atom_style  full
+
+read_data  go-h2o-ion.lmp
+#replicate 1 1 1
+#read_restart   res.500000
+
+group graphene type 1 2 3
+group epoxy    type 4 
+group hydroxy  type 5 6
+group water    type 7 8
+group h3o      type 9 10 
+group oh       type 11 12
+
+group functionals union epoxy hydroxy
+group substrate   union functionals graphene
+group ions        union h3o oh
+group fluid       union water ions
+
+########################################################
+
+pair_style hybrid lj/cut/coul/long 10 airebo 3.0 1 0
+
+# set all default pair_coeffs to 0
+pair_coeff      *   *   lj/cut/coul/long 0.00 0.00 
+
+# epoxy ----------------------------------
+
+set type 2  charge  0.14 # C_epoxy
+set type 4  charge -0.28 # O_epoxy
+
+pair_coeff  2   7   lj/cut/coul/long 0.1012299728  3.335 # C_epoxy-water [DOI: 10.1021/acs.jpcc.5b07345]
+pair_coeff  4   7   lj/cut/coul/long 0.1475038606  3.035 # O_epoxy-water
+pair_coeff  1   4   lj/cut/coul/long 0.1757711359  3.225 # O_epoxy-C
+pair_coeff  2   4   lj/cut/coul/long 0.0961172307  3.200 # O_epoxy-C_epoxy
+pair_coeff  3   4   lj/cut/coul/long 0.1757711359  3.225 # O_epoxy-C_hydroxy
+pair_coeff  4   4   lj/cut/coul/long 0.1400539999  2.900 # O_epoxy-O_epoxy
+pair_coeff  4   5   lj/cut/coul/long 0.1542700106  2.985 # O_epoxy-O_hydroxy
+
+
+# hydroxy ------------------------------------
+
+set type 3 charge   0.150 # C_hydroxy
+set type 5 charge  -0.585 # O_hydroxy
+set type 6 charge   0.435 # H_hydroxy
+
+pair_coeff  3   7   lj/cut/coul/long 0.1043009801  3.360 # C_hydroxy-water
+pair_coeff  5   7   lj/cut/coul/long 0.1624760602  3.120 # O_hydroxy-water
+pair_coeff  1   5   lj/cut/coul/long 0.1090853706  3.310 # O_hydroxy-C
+pair_coeff  2   5   lj/cut/coul/long 0.1058734932  3.285 # O_hydroxy-C_epoxy
+pair_coeff  3   5   lj/cut/coul/long 0.1090853706  3.310 # O_hydroxy-C_hydroxy
+pair_coeff  5   5   lj/cut/coul/long 0.1699290000  3.070 # O_hydroxy-O_hydroxy
+
+
+# water (SPC/E) ------------------------------
+
+set type 7 charge -0.834 # Ow
+set type 8 charge  0.417 # Hw
+
+pair_coeff  7   7   lj/cut/coul/long 0.155300000  3.166 # water-water
+pair_coeff  1   7   lj/cut/coul/long 0.092672000  3.283 # water-C
+#pair_coeff 1   7   0.104300980  3.360 # water-C
+
+
+# graphene ------------------------------------
+
+pair_coeff  *   *   airebo CH.airebo.real C C C NULL NULL NULL NULL NULL NULL NULL NULL NULL
+
+
+# ions ----------------------------------------
+
+set type 9  charge -0.4166 # O (H3O+)
+set type 10 charge  0.4722 # H (H3O+)
+set type 11 charge -1.3500 # O (OH-)
+set type 12 charge  0.3500 # H (OH-)
+
+# H3O+
+#pair_coeff		5   5  0.147467 3.050 #O-O
+# OH-
+#pair_coeff		7   7  0.149618 3.840 #O-O
+
+pair_coeff	9   11   lj/cut/coul/long 0.1485390000  3.445 # H3O-OH
+pair_coeff	7   9    lj/cut/coul/long 0.1513320000  3.108 # H3O-water
+pair_coeff	7   11   lj/cut/coul/long 0.1524330000  3.503 # OH-water
+pair_coeff	1*3 9    lj/cut/coul/long 0.0903050000  3.225 # H3O-C !!!
+pair_coeff	1*3	11   lj/cut/coul/long 0.0909610000  3.620 # OH-C  !!!
+pair_coeff  4   9    lj/cut/coul/long 0.1437127107  2.975 # H3O-O_epoxy
+pair_coeff  5   9    lj/cut/coul/long 0.1583000943  3.060 # H3O-O_hydroxy
+pair_coeff  4   11   lj/cut/coul/long 0.1447570356  3.412 # OH-O_epoxy
+pair_coeff  5   11   lj/cut/coul/long 0.1594504221  3.455 # OH-O_hydroxy
+
+
+# =========================================
+
+kspace_style pppm 1.0e-4
+
+# bonds/angles/impropers --------
+
+bond_style harmonic
+bond_coeff 1 320 1.410 # epoxy
+bond_coeff 2 450 1.364 # hydroxy C-O
+bond_coeff 3 553 0.945 # hydroxy O-H
+bond_coeff 4 450 1.000 # water
+
+angle_style harmonic
+angle_coeff 1 60 109.50  # epoxy
+angle_coeff 2 35 113.00  # hydroxy C-O-H
+angle_coeff 3 70 120.00  # hydroxy C-C-O
+angle_coeff 4 55 109.47  # water
+
+dihedral_style opls
+dihedral_coeff 1  1.6820005  0 -1.6820005 0 # hydroxy C-C-O-H
+
+fix shake water shake 0.0001 20 0 b 4 a 4 # only water
+
+########################################################
+
+#neighbor       2.0 nsq
+neigh_modify    every 5 delay 0 check no
+
+####################
+
+region reg block INF INF INF INF 2 INF
+group  grp region reg
+group  upper intersect graphene grp
+group  lower subtract  graphene upper
+
+compute hi upper com
+compute lo lower com
+variable h equal (c_hi[3]-c_lo[3])
+
+####################
+
+variable dl equal 3.676
+variable vp equal (lx*ly*(v_h-v_dl)) #effective volume
+variable den equal ((mass(functionals)/2.+mass(fluid))/v_vp*1.66054) #gr/cm3
+
+#################### 
+
+#restart 500000 res
+
+####################
+
+group mov   union fluid substrate
+
+compute Tf fluid      temp
+compute Ts substrate  temp
+compute T  mov        temp
+
+############################ stress-tensor
+
+compute     peratom fluid stress/atom Tf
+compute     sxx fluid   reduce sum c_peratom[1]
+compute     syy fluid   reduce sum c_peratom[2]
+compute     szz fluid   reduce sum c_peratom[3]
+compute     sxy fluid   reduce sum c_peratom[4]
+compute     sxz fluid   reduce sum c_peratom[5]
+compute     syz fluid   reduce sum c_peratom[6]
+
+variable    pxy  equal   -c_sxy/(v_vp)
+variable    pxz  equal   -c_sxz/(v_vp)
+variable    pyz  equal   -c_syz/(v_vp)
+variable    pzz  equal   -c_szz/(v_vp)
+variable    plat equal  -(c_sxx+c_syy)/(2*v_vp)
+variable    ptot equal  -(c_sxx+c_syy+c_szz)/(3*v_vp)
+
+############################ applied shear force on solid interface
+
+compute     force1 lower group/group fluid
+variable     F1x equal c_force1[1]
+variable     F1y equal c_force1[2]
+
+compute     force2 upper group/group fluid
+variable     F2x equal c_force2[1]
+variable     F2y equal c_force2[2]
+
+####################
+
+thermo          500
+thermo_style 	custom step c_T c_Tf c_Ts etotal v_den v_h 
+
+dump           1 all xyz 1000 dump.xyz
+dump_modify    1 sort id element C C C O1 O2 H2 Ow Hw O H O H
+
+group graphene type 1 2 3
+group epoxy    type 4 
+group hydroxy  type 5 6
+group water    type 7 8
+group h3o      type 9 10 
+group oh       type 11 12
+
+#################### relaxing
+
+fix             u upper recenter INIT INIT NULL
+fix             l lower recenter INIT INIT INIT
+
+# --------------
+
+timestep        0.1
+velocity        water create 1 2222 dist gaussian mom yes rot yes
+fix             rigid ions rigid/nvt/small molecule temp 1 1 100 
+fix             rlx1  water     nvt temp 1 1 100
+fix             rlx2  substrate nvt temp 1 1 100
+
+run             1000
+unfix           rlx1
+unfix           rlx2
+unfix 			rigid
+#write_data      rlx.lmp
+
+# --------------
+
+timestep        1.0
+velocity        water create 1 2222 dist gaussian mom yes rot yes
+fix             rigid ions rigid/nvt/small molecule temp 300 300 100 
+fix             rlx1  water     nvt temp 300 300 100
+fix             rlx2  substrate nvt temp 300 300 100
+
+run             500000
+unfix           rlx1
+unfix           rlx2
+unfix 			rigid
+#write_data      rlx.lmp
+
+######################################################## 
