@@ -1,6 +1,5 @@
 # ===============================================================
-# | This lammps script simply uses spc/e model for molecular    |
-# | dynamic simulation of water at ambient condition.           |
+# | This lammps script simulates bulk ethanol using OPSL force. |
 # | Written by Hossein Ghorbanfekr hgh.comphys@gmail.com (2019) |
 # ===============================================================
 
