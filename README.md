@@ -1,4 +1,4 @@
 # Simulations
-This repo contains a collection of computer simulation in physic in particular using molecular dynamics simulations.
+This repo contains a collection of computer simulations in physics mainly in context of molecular dynamics simulations.
 
-See each directory for scripts and more details. 
+Please see each directory for scripts and more details. 
